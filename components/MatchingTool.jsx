@@ -394,7 +394,7 @@ function ResultsScreen({ results, contact }) {
                     #{i + 1}
                   </span>
                   <h3 className="text-xl font-bold text-gray-900">
-                    {t["Träger / Betreiber"]}
+                    {t["Träger / Betreiber"] || t["Tr\u00e4ger / Betreiber"] || t["Name"] || t["Traeger"] || Object.values(t).find((v, i) => i === 1 && typeof v === "string") || "Träger"}
                   </h3>
                   <span className="text-sm text-gray-500">{t["Trägertyp"]}</span>
                 </div>
