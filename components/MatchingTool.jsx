@@ -371,7 +371,7 @@ function ContactStep({ contact, setContact, einwilligung, setEinwilligung, onSub
 const META_FIELDS = ["id", "matchScore", "matchLabel", "hasDetailData"];
 
 function getTraegerName(t) {
-  if (t["Träger / Betreiber"]) return t["Träger / Betreiber"];
+  if (t["Traeger"]) return t["Traeger"];
   const entry = Object.entries(t).find(
     ([key, value]) => !META_FIELDS.includes(key) && typeof value === "string" && value.trim() !== ""
   );
@@ -408,7 +408,7 @@ function ResultsScreen({ results, contact }) {
                   <h3 className="text-xl font-bold text-gray-900">
                     {getTraegerName(t)}
                   </h3>
-                  <span className="text-sm text-gray-500">{t["Trägertyp"]}</span>
+                  <span className="text-sm text-gray-500">{t["Traegertyp"]}</span>
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-brand-500">
@@ -421,16 +421,16 @@ function ResultsScreen({ results, contact }) {
                 {t["Tarifbindung"] && (
                   <Tag>{t["Tarifbindung"]}</Tag>
                 )}
-                {t["Dienstwagen PDL/EL"] && (
-                  <Tag>🚗 {t["Dienstwagen PDL/EL"]}</Tag>
+                {t["Dienstwagen"] && (
+                  <Tag>🚗 {t["Dienstwagen"]}</Tag>
                 )}
                 {t["Versorgungsform"] && (
                   <Tag>{t["Versorgungsform"]}</Tag>
                 )}
               </div>
-              {t["Besonderheiten / Bekanntes"] && (
+              {t["Besonderheiten"] && (
                 <p className="text-sm text-gray-600">
-                  {t["Besonderheiten / Bekanntes"]}
+                  {t["Besonderheiten"]}
                 </p>
               )}
               {t.hasDetailData && (
