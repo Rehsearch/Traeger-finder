@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState } from "react";
 import { matchCarriers } from "@/lib/matching";
 
@@ -368,7 +368,19 @@ function ContactStep({ contact, setContact, einwilligung, setEinwilligung, onSub
 }
 
 // ─── RESULTS SCREEN ────────────────────────────────────────────────────────────
+const META_FIELDS = ["id", "matchScore", "matchLabel", "hasDetailData"];
+
+function getTraegerName(t) {
+  if (t["Träger / Betreiber"]) return t["Träger / Betreiber"];
+  const entry = Object.entries(t).find(
+    ([key, value]) => !META_FIELDS.includes(key) && typeof value === "string" && value.trim() !== ""
+  );
+  return entry ? entry[1] : "Träger";
+}
+
 function ResultsScreen({ results, contact }) {
+  console.log(JSON.stringify(results[0]));
+
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
       <div className="max-w-2xl mx-auto">
@@ -394,7 +406,7 @@ function ResultsScreen({ results, contact }) {
                     #{i + 1}
                   </span>
                   <h3 className="text-xl font-bold text-gray-900">
-                    {t["Träger / Betreiber"] || t["Tr\u00e4ger / Betreiber"] || t["Name"] || t["Traeger"] || Object.values(t).find((v, i) => i === 1 && typeof v === "string") || "Träger"}
+                    {getTraegerName(t)}
                   </h3>
                   <span className="text-sm text-gray-500">{t["Trägertyp"]}</span>
                 </div>
