@@ -428,11 +428,6 @@ function ResultsScreen({ results, contact }) {
                   <Tag>{t["Versorgungsform"]}</Tag>
                 )}
               </div>
-              {t["Besonderheiten"] && (
-                <p className="text-sm text-gray-600">
-                  {t["Besonderheiten"]}
-                </p>
-              )}
               {t.hasDetailData && (
                 <div className="mt-3 inline-flex items-center gap-1.5 bg-brand-50 text-brand-600 text-xs font-medium px-3 py-1 rounded-full">
                   ✓ Detailbewertung durch Rehsearch verfügbar
