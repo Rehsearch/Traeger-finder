@@ -349,7 +349,7 @@ function ContactStep({ contact, setContact, einwilligung, setEinwilligung, onSub
           Ich stimme zu, dass Rehsearch GmbH mich zum Zweck der Beratung bei einem
           möglichen Stellenwechsel kontaktieren darf. Meine Daten werden nicht
           weitergegeben und können jederzeit widerrufen werden.{" "}
-          <a href="/datenschutz" className="underline text-brand-500" target="_blank">Datenschutzhinweis</a>
+          <a href="https://rehsearch.de/datenschutz-fuer-bewerber/" className="underline text-brand-500" target="_blank">Datenschutzhinweis</a>
         </span>
       </label>
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
