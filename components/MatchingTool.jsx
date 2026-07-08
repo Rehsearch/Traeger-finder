@@ -428,6 +428,13 @@ function ResultsScreen({ results, contact }) {
                   <Tag>{t["Versorgungsform"]}</Tag>
                 )}
               </div>
+              {t.nichtErfuellt?.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {t.nichtErfuellt.map((reason) => (
+                    <WarnTag key={reason}>{reason}</WarnTag>
+                  ))}
+                </div>
+              )}
               {t.hasDetailData && (
                 <div className="mt-3 inline-flex items-center gap-1.5 bg-brand-50 text-brand-600 text-xs font-medium px-3 py-1 rounded-full">
                   ✓ Detailbewertung durch Rehsearch verfügbar
@@ -462,6 +469,14 @@ function ResultsScreen({ results, contact }) {
 function Tag({ children }) {
   return (
     <span className="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-full">
+      {children}
+    </span>
+  );
+}
+
+function WarnTag({ children }) {
+  return (
+    <span className="bg-red-50 text-red-600 text-xs px-3 py-1 rounded-full">
       {children}
     </span>
   );
