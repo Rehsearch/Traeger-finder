@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useState } from "react";
-import { matchCarriers } from "@/lib/matching";
+import { matchCarriers, findNearestEinrichtung } from "@/lib/matching";
 
 const STEPS = [
   {
@@ -100,9 +100,20 @@ export default function MatchingTool() {
     setStep((s) => s + 1);
   }
 
-  function handlePlzNext() {
+  async function handlePlzNext() {
     if (!answers.plz) { setError("Bitte PLZ eingeben."); return; }
     setError("");
+
+    try {
+      const geoRes = await fetch(`/api/geocode?plz=${encodeURIComponent(answers.plz)}`);
+      if (geoRes.ok) {
+        const { lat, lng } = await geoRes.json();
+        setAnswers((a) => ({ ...a, lat, lng }));
+      }
+    } catch {
+      // Geocoding optional — Matching funktioniert auch ohne Koordinaten weiter.
+    }
+
     setStep((s) => s + 1);
   }
 
@@ -114,12 +125,15 @@ export default function MatchingTool() {
     setLoading(true);
 
     try {
-      // 1. Träger laden
+      // 1. Träger + Einrichtungen laden
       const res      = await fetch("/api/carriers");
-      const { carriers } = await res.json();
+      const { carriers, einrichtungen } = await res.json();
 
-      // 2. Matching
-      const top3 = matchCarriers(carriers, answers);
+      // 2. Matching (inkl. Geo-Score)
+      const top3 = matchCarriers(carriers, answers, einrichtungen).map((c) => ({
+        ...c,
+        naheEinrichtung: findNearestEinrichtung(c["Traeger"], einrichtungen, answers.lat, answers.lng),
+      }));
       setResults(top3);
 
       // 3. Lead speichern
@@ -378,6 +392,15 @@ function getTraegerName(t) {
   return entry ? entry[1] : "Träger";
 }
 
+function formatEinrichtung(naheEinrichtung) {
+  const { name, distanceKm } = naheEinrichtung;
+  const km = Math.round(distanceKm);
+  const parts = (name || "").split(",");
+  const stadt = parts.length > 1 ? parts[parts.length - 1].trim() : null;
+  const anzeigeName = stadt ? parts.slice(0, -1).join(",").trim() : (name || "").trim();
+  return `${anzeigeName}${stadt ? `, ${stadt}` : ""} (ca. ${km} km entfernt)`;
+}
+
 function ResultsScreen({ results, contact }) {
   console.log(JSON.stringify(results[0]));
 
@@ -434,6 +457,11 @@ function ResultsScreen({ results, contact }) {
                     <WarnTag key={reason}>{reason}</WarnTag>
                   ))}
                 </div>
+              )}
+              {t.naheEinrichtung && (
+                <p className="text-sm text-gray-600 mb-1">
+                  📍 {formatEinrichtung(t.naheEinrichtung)}
+                </p>
               )}
               {t.hasDetailData && (
                 <div className="mt-3 inline-flex items-center gap-1.5 bg-brand-50 text-brand-600 text-xs font-medium px-3 py-1 rounded-full">
