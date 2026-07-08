@@ -215,7 +215,7 @@ function StartScreen({ onStart }) {
         >
           Jetzt starten →
         </button>
-        <p className="mt-4 text-xs text-gray-400">Ein Service von Rehsearch GmbH</p>
+        <img src="/logo.png" alt="Rehsearch" className="h-10" />
       </div>
     </div>
   );
@@ -234,7 +234,7 @@ function Screen({ progress, stepNum, totalSteps, children }) {
       </div>
       {/* Header */}
       <div className="px-6 py-4 flex items-center justify-between max-w-2xl mx-auto w-full">
-        <span className="text-sm font-medium text-brand-500">Rehsearch</span>
+        <img src="/logo.png" alt="Rehsearch" className="h-8" />
         <span className="text-sm text-gray-400">
           {stepNum} / {totalSteps + 1}
         </span>
