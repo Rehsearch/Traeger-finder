@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useState } from "react";
-import { matchCarriers, findNearestEinrichtung } from "@/lib/matching";
+import { matchCarriers, findEinrichtungenImRadius, parseRadiusKm } from "@/lib/matching";
 
 const STEPS = [
   {
@@ -130,9 +130,10 @@ export default function MatchingTool() {
       const { carriers, einrichtungen } = await res.json();
 
       // 2. Matching (inkl. Geo-Score)
+      const radiusKm = parseRadiusKm(answers.pendelradius);
       const top3 = matchCarriers(carriers, answers, einrichtungen).map((c) => ({
         ...c,
-        naheEinrichtung: findNearestEinrichtung(c["Traeger"], einrichtungen, answers.lat, answers.lng),
+        einrichtungenInRadius: findEinrichtungenImRadius(c["Traeger"], einrichtungen, answers.lat, answers.lng, radiusKm),
       }));
       setResults(top3);
 
@@ -392,17 +393,17 @@ function getTraegerName(t) {
   return entry ? entry[1] : "Träger";
 }
 
-function formatEinrichtung(naheEinrichtung) {
-  const { name, distanceKm } = naheEinrichtung;
-  const km = Math.round(distanceKm);
-  const parts = (name || "").split(",");
-  const stadt = parts.length > 1 ? parts[parts.length - 1].trim() : null;
-  const anzeigeName = stadt ? parts.slice(0, -1).join(",").trim() : (name || "").trim();
-  return `${anzeigeName}${stadt ? `, ${stadt}` : ""} (ca. ${km} km entfernt)`;
-}
-
 function ResultsScreen({ results, contact }) {
+  const [expandedIds, setExpandedIds] = useState(new Set());
   console.log(JSON.stringify(results[0]));
+
+  function toggleExpanded(id) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4">
@@ -440,6 +441,11 @@ function ResultsScreen({ results, contact }) {
                   <div className="text-xs text-gray-400">{t.matchLabel}</div>
                 </div>
               </div>
+              {t.erfuellt?.length > 0 && (
+                <p className="text-xs text-gray-500 mb-3">
+                  {t.erfuellt.map((r) => `✓ ${r}`).join(" · ")}
+                </p>
+              )}
               <div className="flex flex-wrap gap-2 mb-3">
                 {t["Tarifbindung"] && (
                   <Tag>{t["Tarifbindung"]}</Tag>
@@ -458,10 +464,37 @@ function ResultsScreen({ results, contact }) {
                   ))}
                 </div>
               )}
-              {t.naheEinrichtung && (
-                <p className="text-sm text-gray-600 mb-1">
-                  📍 {formatEinrichtung(t.naheEinrichtung)}
-                </p>
+              {t.einrichtungenInRadius != null && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                    Einrichtungen in deiner Region
+                  </p>
+                  {t.einrichtungenInRadius.length > 0 ? (
+                    <ul className="text-sm text-gray-600 space-y-0.5">
+                      {t.einrichtungenInRadius.map((e) => (
+                        <li key={e.name}>📍 {e.name} (ca. {Math.round(e.distanceKm)} km entfernt)</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      Dieser Träger betreibt aktuell keine Einrichtung in deinem Suchradius.
+                      Im Beratungsgespräch besprechen wir gerne Alternativen.
+                    </p>
+                  )}
+                </div>
+              )}
+              {t["Besonderheiten"] && (
+                <div className="mt-3">
+                  <button
+                    onClick={() => toggleExpanded(t.id)}
+                    className="text-sm text-brand-600 font-medium hover:underline"
+                  >
+                    {expandedIds.has(t.id) ? "Weniger anzeigen" : "Mehr über diesen Träger"}
+                  </button>
+                  {expandedIds.has(t.id) && (
+                    <p className="text-sm text-gray-600 mt-2">{t["Besonderheiten"]}</p>
+                  )}
+                </div>
               )}
               {t.hasDetailData && (
                 <div className="mt-3 inline-flex items-center gap-1.5 bg-brand-50 text-brand-600 text-xs font-medium px-3 py-1 rounded-full">
