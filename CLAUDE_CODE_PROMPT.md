@@ -20,6 +20,7 @@ AIRTABLE_BASE_ID=appae42Y9ShLO1G2w
 AIRTABLE_CARRIERS_TABLE=tblutq0gYOqFe3B3d
 AIRTABLE_LEADS_TABLE=Leads
 LEAD_NOTIFY_EMAIL=pfk@rehsearch.de
+POSITIONSTACK_API_KEY=<dein_positionstack_key>
 ```
 
 ## Schritt 3 — Lokal testen
@@ -44,9 +45,10 @@ git push -u origin main
 3. Environment Variables in Vercel eintragen:
    - AIRTABLE_API_TOKEN
    - AIRTABLE_BASE_ID = appae42Y9ShLO1G2w
-   - AIRTABLE_CARRIERS_TABLE = tblknvJx1iLMlFcjU
+   - AIRTABLE_CARRIERS_TABLE = tblutq0gYOqFe3B3d
    - AIRTABLE_LEADS_TABLE = Leads
    - LEAD_NOTIFY_EMAIL = pfk@rehsearch.de
+   - POSITIONSTACK_API_KEY
 
 4. Deploy klicken → fertig
 

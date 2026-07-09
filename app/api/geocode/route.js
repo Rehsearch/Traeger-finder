@@ -7,17 +7,15 @@ export async function GET(req) {
   }
 
   try {
-    const url = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(plz)}&country=de&format=json`;
-    const res = await fetch(url, {
-      headers: { "User-Agent": "Rehsearch-Traeger-Finder/1.0 (pfk@rehsearch.de)" },
-    });
+    const url = `http://api.positionstack.com/v1/forward?access_key=${process.env.POSITIONSTACK_API_KEY}&query=${encodeURIComponent(plz)}&country=DE`;
+    const res = await fetch(url);
     const data = await res.json();
 
-    if (!Array.isArray(data) || data.length === 0) {
+    if (!Array.isArray(data.data) || data.data.length === 0) {
       return Response.json({ error: "PLZ nicht gefunden" }, { status: 404 });
     }
 
-    return Response.json({ lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) });
+    return Response.json({ lat: data.data[0].latitude, lng: data.data[0].longitude });
   } catch (e) {
     console.error(e);
     return Response.json({ error: "Geocoding fehlgeschlagen" }, { status: 500 });
