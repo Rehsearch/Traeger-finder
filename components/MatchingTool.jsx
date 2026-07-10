@@ -386,6 +386,7 @@ function ContactStep({ contact, setContact, einwilligung, setEinwilligung, onSub
 
 // ─── RESULTS SCREEN ────────────────────────────────────────────────────────────
 const META_FIELDS = ["id", "matchScore", "matchLabel", "hasDetailData"];
+const DIENSTWAGEN_ANZEIGEWERTE = ["Ja", "Nein", "Ja (EL)", "Ja (PDL/EL)", "Ja (RL)", "Teilweise (RL)", "Auf Anfrage"];
 
 function getTraegerName(t) {
   if (t["Traeger"]) return t["Traeger"];
@@ -471,7 +472,7 @@ function ResultsScreen({ results, contact }) {
                 {t["Tarifbindung"] && (
                   <Tag>{t["Tarifbindung"]}</Tag>
                 )}
-                {t["Dienstwagen"] && (
+                {DIENSTWAGEN_ANZEIGEWERTE.includes(t["Dienstwagen"]) && (
                   <Tag>🚗 {t["Dienstwagen"]}</Tag>
                 )}
                 {t["Versorgungsform"] && (
