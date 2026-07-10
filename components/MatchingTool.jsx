@@ -386,7 +386,7 @@ function ContactStep({ contact, setContact, einwilligung, setEinwilligung, onSub
 
 // ─── RESULTS SCREEN ────────────────────────────────────────────────────────────
 const META_FIELDS = ["id", "matchScore", "matchLabel", "hasDetailData"];
-const DIENSTWAGEN_ANZEIGEWERTE = ["Ja", "Nein", "Ja (EL)", "Ja (PDL/EL)", "Ja (RL)", "Teilweise (RL)", "Auf Anfrage"];
+const DIENSTWAGEN_ANZEIGEWERTE = ["Ja", "Nein", "Ja (EL)", "Ja (PDL/EL)", "Ja (RL)", "Teilweise (RL)", "Auf Anfrage", "Ja (EL/RL)", "Ja (PDL/EL/RL)", "Nein (selten)"];
 
 function getTraegerName(t) {
   if (t["Traeger"]) return t["Traeger"];
