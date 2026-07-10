@@ -1,6 +1,6 @@
 ﻿"use client";
 import { useState } from "react";
-import { matchCarriers, findEinrichtungenImRadius, parseRadiusKm } from "@/lib/matching";
+import { matchCarriers, findEinrichtungenImRadius, parseRadiusKm, formatKununuScore } from "@/lib/matching";
 
 const STEPS = [
   {
@@ -443,6 +443,12 @@ function ResultsScreen({ results, contact }) {
                   <div className="text-xs text-gray-400">{t.matchLabel}</div>
                 </div>
               </div>
+              {t["Kununu_Score"] && (
+                <p className="text-sm text-gray-600 mb-2">
+                  ⭐ Kununu {formatKununuScore(t["Kununu_Score"])} / 5
+                  {t["Kununu_Weiterempfehlung"] && ` · Weiterempfehlung: ${t["Kununu_Weiterempfehlung"]}`}
+                </p>
+              )}
               {t.erfuellt?.length > 0 && (
                 <p className="text-xs text-gray-500 mb-3">
                   {t.erfuellt.map((r) => `✓ ${r}`).join(" · ")}
