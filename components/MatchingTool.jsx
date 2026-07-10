@@ -395,6 +395,19 @@ function getTraegerName(t) {
   return entry ? entry[1] : "Träger";
 }
 
+function cleanBeschreibung(raw) {
+  if (!raw) return null;
+  // Airtable-Import-Artefakt: Feld enthält oft "Name,Beschreibung" oder
+  // "Name,\"Beschreibung\"" als eine unaufgeteilte CSV-Zeile.
+  const idx = raw.indexOf(",");
+  if (idx === -1 || idx > 120) return raw.trim();
+  let rest = raw.slice(idx + 1).trim();
+  if (rest.startsWith('"') && rest.endsWith('"')) {
+    rest = rest.slice(1, -1);
+  }
+  return rest;
+}
+
 function ResultsScreen({ results, contact }) {
   const [expandedIds, setExpandedIds] = useState(new Set());
   console.log(JSON.stringify(results[0]));
@@ -497,7 +510,7 @@ function ResultsScreen({ results, contact }) {
                 </button>
                 {expandedIds.has(t.id) && (
                   <p className="text-sm text-gray-600 mt-2">
-                    {t["Besonderheiten"] || "Detaillierte Informationen zu diesem Träger erhalten Sie im persönlichen Beratungsgespräch."}
+                    {cleanBeschreibung(t["Beschreibung_Public"]) || "Detaillierte Informationen zu diesem Träger erhalten Sie im persönlichen Beratungsgespräch."}
                   </p>
                 )}
               </div>
