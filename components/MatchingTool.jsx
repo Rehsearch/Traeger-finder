@@ -57,6 +57,7 @@ const STEPS = [
       { value: "kein_entwicklungspotenzial", label: "Kein Entwicklungspotenzial" },
       { value: "instabile_fuehrung",       label: "Instabile Unternehmensführung" },
       { value: "gehalt",                   label: "Gehalt" },
+      { value: "sonstiges",                label: "Sonstiges" },
     ],
   },
   {
