@@ -435,6 +435,17 @@ function ResultsScreen({ results, contact }) {
           </p>
         </div>
 
+        <div className="bg-teal-50 border border-teal-200 rounded-2xl p-5 mb-8 flex items-start gap-3">
+          <svg className="w-6 h-6 text-teal-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-teal-900">
+            <span className="font-semibold">Rehsearch pflegt zu den meisten Trägern enge, vertragliche Partnerschaften</span>{" "}
+            und stellt für dich gerne den Kontakt her — mit persönlicher Empfehlung
+            bei den Entscheider:innen.
+          </p>
+        </div>
+
         <div className="space-y-4 mb-8">
           {results.map((t, i) => (
             <div
