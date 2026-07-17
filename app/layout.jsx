@@ -1,5 +1,6 @@
 import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
+import MetaPixel from "@/components/MetaPixel";
 
 export const metadata = {
   title: "Träger-Finder | Rehsearch",
@@ -16,6 +17,7 @@ export default function RootLayout({ children }) {
       <body className="bg-gray-50 min-h-screen">
         {children}
         <CookieConsent />
+        <MetaPixel />
       </body>
     </html>
   );

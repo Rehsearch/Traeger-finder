@@ -1,6 +1,7 @@
 ﻿"use client";
 import { useState } from "react";
 import { matchCarriers, findEinrichtungenImRadius, parseRadiusKm, formatKununuScore } from "@/lib/matching";
+import { trackLead } from "@/lib/metaPixel";
 
 const STEPS = [
   {
@@ -151,6 +152,7 @@ export default function MatchingTool() {
         }),
       });
 
+      trackLead();
       setSubmitted(true);
       setStep(totalSteps + 2);
     } catch {
