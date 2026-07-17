@@ -28,8 +28,8 @@ const LEAD_ANSWERS = {
   position: "pdl",
   gehalt: "60_70k",
   wechselbereitschaft: "aktiv_kurzfristig",
-  dienstwagen: "voraussetzung",
-  plz: "75172",
+  dienstwagen: "nicht_relevant",
+  plz: "95444", // Bayreuth
   pendelradius: "50", // Feld war im Lead leer, Code-Default ist 50
   wechselgrund: "zu_wenig_spielraum",
   // versorgungsform und traegerAusschluss fehlten im Lead-Datensatz
@@ -39,9 +39,9 @@ const LEAD_ANSWERS = {
 // die echte PLZ ein Tippfehler war und du eine korrigierte PLZ testen willst).
 // null = realistisches Verhalten nachstellen (siehe Geocoding-Check unten).
 // Fallback, falls POSITIONSTACK_API_KEY lokal nicht gesetzt ist: reale
-// Koordinaten für PLZ 75172 (Pforzheim), per Nominatim ermittelt.
-const MANUAL_LAT_OVERRIDE = 48.8908375;
-const MANUAL_LNG_OVERRIDE = 8.6843219;
+// Koordinaten für PLZ 95444 (Bayreuth), per Nominatim ermittelt.
+const MANUAL_LAT_OVERRIDE = 49.9429498;
+const MANUAL_LNG_OVERRIDE = 11.5769491;
 
 // ─── Duplizierte interne Logik aus lib/matching.js (Stand 2026-07-17) ──────
 const NIVEAU_MAP = {
@@ -213,6 +213,7 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
 
   const geo = explainGeo(c["Traeger"], einrichtungen, a.lat, a.lng, radiusKm);
   score += geo.punkte;
+  const geoUnbestaetigt = geo.punkte === 0;
   steps.push({ label: `Geo-Matching: ${geo.grund}`, punkte: geo.punkte });
 
   const besonderheiten = (c["Besonderheiten"] || "").toLowerCase();
@@ -244,7 +245,9 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
     steps.push({ label: `Tarifvertrag ("${c["Tarifbindung"]}")`, punkte: tarifPunkte });
   }
 
-  const clamped = Math.max(0, Math.min(95, score));
+  const obergrenze = geoUnbestaetigt ? 65 : 95;
+  if (geoUnbestaetigt) steps.push({ label: `Obergrenze gedeckelt auf ${obergrenze}% (kein bestätigter Geo-Bezug)`, punkte: 0 });
+  const clamped = Math.max(0, Math.min(obergrenze, score));
   return { total: clamped, rawTotal: score, steps, hardFiltered: false };
 }
 
@@ -332,4 +335,22 @@ for (const [i, r] of top10.entries()) {
     console.log(`    ${sign}${s.punkte}  ${s.label}`);
   }
   console.log();
+}
+
+// Gezielte Einzel-Aufschlüsselung für einen bestimmten Träger (unabhängig vom Rang)
+const GEZIELTER_TRAEGER = "AWO Bezirksverband Westliches Westfalen e.V.";
+const gezielt = results.find((r) => r.carrier["Traeger"] === GEZIELTER_TRAEGER);
+console.log(`=== Einzel-Aufschlüsselung: "${GEZIELTER_TRAEGER}" ===\n`);
+if (!gezielt) {
+  console.log("Träger nicht in den geladenen Daten gefunden.");
+} else if (gezielt.hardFiltered) {
+  console.log("Träger wurde durch einen Hard-Filter aussortiert (Score 0):", gezielt.steps[0].label);
+} else {
+  console.log(`Score: ${gezielt.total}${gezielt.rawTotal !== gezielt.total ? ` (roh: ${gezielt.rawTotal}, gekappt auf 0-95)` : ""}`);
+  for (const s of gezielt.steps) {
+    const sign = s.punkte > 0 ? "+" : "";
+    console.log(`    ${sign}${s.punkte}  ${s.label}`);
+  }
+  const rang = [...results].filter((r) => !r.hardFiltered).sort((a, b) => b.total - a.total).findIndex((r) => r.carrier["Traeger"] === GEZIELTER_TRAEGER) + 1;
+  console.log(`\nRang unter allen nicht hart-gefilterten Trägern: #${rang}`);
 }
