@@ -17,7 +17,7 @@ Erstelle eine Datei `.env.local` im Projektroot mit folgendem Inhalt
 ```
 AIRTABLE_API_TOKEN=<dein_airtable_token>
 AIRTABLE_BASE_ID=appae42Y9ShLO1G2w
-AIRTABLE_CARRIERS_TABLE=tblutq0gYOqFe3B3d
+AIRTABLE_CARRIERS_TABLE=tblnJOcC5i3l8BQgR
 AIRTABLE_LEADS_TABLE=Leads
 LEAD_NOTIFY_EMAIL=pfk@rehsearch.de
 POSITIONSTACK_API_KEY=<dein_positionstack_key>
