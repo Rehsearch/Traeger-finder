@@ -1,4 +1,5 @@
 import "./globals.css";
+import CookieConsent from "@/components/CookieConsent";
 
 export const metadata = {
   title: "Träger-Finder | Rehsearch",
@@ -12,7 +13,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="de">
-      <body className="bg-gray-50 min-h-screen">{children}</body>
+      <body className="bg-gray-50 min-h-screen">
+        {children}
+        <CookieConsent />
+      </body>
     </html>
   );
 }
