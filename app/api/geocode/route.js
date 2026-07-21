@@ -1,23 +1,19 @@
+import plzCoordinates from "@/data/plz-coordinates.json";
+
 export async function GET(req) {
   const { searchParams } = new URL(req.url);
-  const plz = searchParams.get("plz");
+  const plz = (searchParams.get("plz") || "").trim();
 
   if (!plz) {
     return Response.json({ error: "PLZ fehlt" }, { status: 400 });
   }
 
-  try {
-    const url = `http://api.positionstack.com/v1/forward?access_key=${process.env.POSITIONSTACK_API_KEY}&query=${encodeURIComponent(plz)}&country=DE`;
-    const res = await fetch(url);
-    const data = await res.json();
+  const treffer = plzCoordinates[plz];
 
-    if (!Array.isArray(data.data) || data.data.length === 0) {
-      return Response.json({ error: "PLZ nicht gefunden" }, { status: 404 });
-    }
-
-    return Response.json({ lat: data.data[0].latitude, lng: data.data[0].longitude });
-  } catch (e) {
-    console.error(e);
-    return Response.json({ error: "Geocoding fehlgeschlagen" }, { status: 500 });
+  if (!treffer) {
+    return Response.json({ error: "PLZ nicht gefunden" }, { status: 404 });
   }
+
+  const [lat, lng] = treffer;
+  return Response.json({ lat, lng });
 }
