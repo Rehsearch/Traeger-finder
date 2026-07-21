@@ -16,6 +16,11 @@ export default function RootLayout({ children }) {
     <html lang="de">
       <body className="bg-gray-50 min-h-screen">
         {children}
+        <footer className="text-center text-xs text-gray-400 py-6">
+          <a href="/impressum" className="underline">Impressum</a>
+          {" · "}
+          <a href="/datenschutz" className="underline">Datenschutz</a>
+        </footer>
         <CookieConsent />
         <MetaPixel />
       </body>
