@@ -216,7 +216,7 @@ function StartScreen({ onStart }) {
     <div className="min-h-screen bg-gradient-to-br from-brand-50 to-white flex items-center justify-center px-4">
       <div className="max-w-xl w-full text-center">
         <div className="inline-block bg-brand-500 text-white text-sm font-medium px-4 py-1.5 rounded-full mb-6">
-          Kostenlos &amp; anonym
+          Kostenlos &amp; unverbindlich
         </div>
         <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
           Welcher Pflegeträger passt wirklich zu dir?
@@ -380,10 +380,11 @@ function ContactStep({ contact, setContact, einwilligung, setEinwilligung, onSub
           className="mt-1 w-4 h-4 rounded border-gray-300 text-brand-500"
         />
         <span className="text-sm text-gray-600">
-          Ich stimme zu, dass Rehsearch GmbH mich zum Zweck der Beratung bei einem
-          möglichen Stellenwechsel kontaktieren darf. Meine Daten werden nicht
-          weitergegeben und können jederzeit widerrufen werden.{" "}
-          <a href="https://rehsearch.de/datenschutz-fuer-bewerber/" className="underline text-brand-500" target="_blank">Datenschutzhinweis</a>
+          Ich stimme zu, dass Rehsearch GmbH meine Angaben an die für mich
+          ausgewählten Träger weitergibt und mich zum Zweck der Beratung bei
+          einem möglichen Stellenwechsel kontaktieren darf. Diese Einwilligung
+          kann ich jederzeit widerrufen.{" "}
+          <a href="/datenschutz" className="underline text-brand-500" target="_blank">Datenschutzhinweis</a>
         </span>
       </label>
       {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
