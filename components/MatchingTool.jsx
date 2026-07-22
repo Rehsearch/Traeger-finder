@@ -86,7 +86,7 @@ const STEPS = [
 export default function MatchingTool() {
   const [step,      setStep]      = useState(0); // 0 = Start
   const [answers,   setAnswers]   = useState({});
-  const [contact,   setContact]   = useState({ name: "", email: "", telefon: "" });
+  const [contact,   setContact]   = useState({ name: "", email: "", telefon: "", beruflicherStatus: "" });
   const [einwilligung, setEinwilligung] = useState(false);
   const [results,   setResults]   = useState(null);
   const [loading,   setLoading]   = useState(false);
@@ -123,6 +123,7 @@ export default function MatchingTool() {
     e.preventDefault();
     if (!einwilligung) { setError("Bitte stimme der Kontaktaufnahme zu."); return; }
     if (!contact.name || !contact.email) { setError("Name und E-Mail sind Pflichtfelder."); return; }
+    if (!contact.beruflicherStatus) { setError("Bitte wähle deinen aktuellen beruflichen Status aus."); return; }
     setError("");
     setLoading(true);
 
@@ -357,6 +358,19 @@ function ContactStep({ contact, setContact, einwilligung, setEinwilligung, onSub
           onChange={(e) => setContact((c) => ({ ...c, telefon: e.target.value }))}
           className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
+        <select
+          required
+          value={contact.beruflicherStatus}
+          onChange={(e) => setContact((c) => ({ ...c, beruflicherStatus: e.target.value }))}
+          className="w-full border border-gray-300 rounded-lg px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-brand-500 text-gray-700"
+        >
+          <option value="" disabled>Wie würdest du deinen aktuellen beruflichen Status beschreiben? *</option>
+          <option value="fuehrungskraft">Ich bin Führungskraft in der Pflege</option>
+          <option value="will_fuehrungskraft_werden">Ich möchte Führungskraft im nächsten Schritt meiner Karriere werden</option>
+          <option value="andere_funktion_pflege">Ich übe eine andere Funktion in der Pflege aus</option>
+          <option value="pflegefachkraft">Ich bin Pflegefachkraft</option>
+          <option value="branchenfremd">Ich bin branchenfremd</option>
+        </select>
       </div>
       <label className="flex items-start gap-3 cursor-pointer mb-6">
         <input

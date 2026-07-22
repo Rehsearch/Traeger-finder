@@ -1,5 +1,13 @@
 import { createLead } from "@/lib/airtable";
 
+const BERUFLICHER_STATUS_LABELS = {
+  fuehrungskraft:                    "Ich bin Führungskraft in der Pflege",
+  will_fuehrungskraft_werden:       "Ich möchte Führungskraft im nächsten Schritt meiner Karriere werden",
+  andere_funktion_pflege:           "Ich übe eine andere Funktion in der Pflege aus",
+  pflegefachkraft:                  "Ich bin Pflegefachkraft",
+  branchenfremd:                    "Ich bin branchenfremd",
+};
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -8,6 +16,7 @@ export async function POST(req) {
       "Name":                    body.name        || "",
       "E-Mail":                  body.email       || "",
       "Telefon":                 body.telefon     || "",
+      "Beruflicher_Status":      BERUFLICHER_STATUS_LABELS[body.beruflicherStatus] || "",
       "Position":                body.position    || "",
       "Gehaltsvorstellung":      body.gehalt      || "",
       "Wechselbereitschaft":     body.wechselbereitschaft || "",
