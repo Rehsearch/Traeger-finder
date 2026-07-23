@@ -287,8 +287,16 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
 
   const obergrenze = geoUnbestaetigt ? 65 : 95;
   if (geoUnbestaetigt) steps.push({ label: `Obergrenze gedeckelt auf ${obergrenze}% (kein bestätigter Geo-Bezug)`, punkte: 0 });
-  const clamped = Math.max(0, Math.min(obergrenze, score));
+  const weicherStart = geoUnbestaetigt ? 50 : 80;
+  const clamped = Math.max(0, weicherDeckel(Math.max(0, score), obergrenze, weicherStart));
   return { total: clamped, rawTotal: score, steps, hardFiltered: false };
+}
+
+function weicherDeckel(score, hardMax, softStart) {
+  if (score <= softStart) return score;
+  const spielraum = hardMax - softStart;
+  const ueberschuss = score - softStart;
+  return softStart + spielraum * (1 - 1 / (1 + ueberschuss / spielraum));
 }
 
 // ─── Ausführung ──────────────────────────────────────────────────────────────
