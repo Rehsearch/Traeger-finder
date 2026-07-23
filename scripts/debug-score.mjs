@@ -119,6 +119,40 @@ function resolveKununuScore(c) {
   return extractKununuFromText(c["Beschreibung_Public"]) ?? extractKununuFromText(c["Besonderheiten"]);
 }
 
+const KUNUNU_ANKER = [
+  [1.0, -20],
+  [3.0, 0],
+  [3.4, 5],
+  [3.8, 12],
+  [4.2, 20],
+  [5.0, 20],
+];
+
+function kununuContinuousScore(kununu) {
+  if (kununu <= KUNUNU_ANKER[0][0]) return KUNUNU_ANKER[0][1];
+  if (kununu >= KUNUNU_ANKER[KUNUNU_ANKER.length - 1][0]) return KUNUNU_ANKER[KUNUNU_ANKER.length - 1][1];
+  for (let i = 0; i < KUNUNU_ANKER.length - 1; i++) {
+    const [x0, y0] = KUNUNU_ANKER[i];
+    const [x1, y1] = KUNUNU_ANKER[i + 1];
+    if (kununu >= x0 && kununu <= x1) {
+      const t = (kununu - x0) / (x1 - x0);
+      return y0 + t * (y1 - y0);
+    }
+  }
+  return 0;
+}
+
+const KUNUNU_HOHE_RELEVANZ = new Set([
+  "zu_wenig_spielraum",
+  "schlechte_kommunikation",
+  "keine_wertschaetzung",
+  "instabile_fuehrung",
+]);
+
+function kununuRelevanceMultiplier(wechselgrund) {
+  return KUNUNU_HOHE_RELEVANZ.has(wechselgrund) ? 1.5 : 1.0;
+}
+
 const GENERIC_TRAEGER_ALIASES = {
   awo: "AWO (Arbeiterwohlfahrt)",
   diakonie: "Diakonie / Ev. Werk für Diakonie und Entwicklung",
@@ -221,14 +255,10 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
 
   const kununu = resolveKununuScore(c);
   if (kununu != null) {
-    let kununuPunkte;
-    if (kununu >= 4.2) kununuPunkte = 20;
-    else if (kununu >= 3.8) kununuPunkte = 12;
-    else if (kununu >= 3.4) kununuPunkte = 5;
-    else if (kununu >= 3.0) kununuPunkte = 0;
-    else kununuPunkte = -20;
+    const multiplier = kununuRelevanceMultiplier(a.wechselgrund);
+    const kununuPunkte = kununuContinuousScore(kununu) * multiplier;
     score += kununuPunkte;
-    steps.push({ label: `Kununu-Bewertung (${kununu.toFixed(1)})`, punkte: kununuPunkte });
+    steps.push({ label: `Kununu-Bewertung (${kununu.toFixed(1)}, Relevanz-Multiplikator ${multiplier}x)`, punkte: kununuPunkte });
   }
 
   const intern = parseFloat(c["Interne_Bewertung"]);
