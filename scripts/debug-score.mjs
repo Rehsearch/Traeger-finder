@@ -45,13 +45,19 @@ const MANUAL_LNG_OVERRIDE = 11.5769491;
 
 // ─── Duplizierte interne Logik aus lib/matching.js (Stand 2026-07-17) ──────
 const NIVEAU_MAP = {
-  "überdurchschnittlich": 3,
-  "hoch": 3,
-  "gut": 2,
-  "mittel": 2,
-  "durchschnittlich": 2,
-  "niedrig": 1,
-  "unterdurchschnittlich": 1,
+  "hoch (premiumsegment)":               4,
+  "überdurchschnittlich (konzern)":      4,
+  "gut bis überdurchschnittlich":        3.5,
+  "gut bis sehr gut":                    3.5,
+  "überdurchschnittlich":                4,
+  "mittel bis gut":                      2.5,
+  "mittel (regional sehr unterschiedlich)": 2,
+  "gut":                                 3,
+  "mittel":                              2,
+  "durchschnittlich":                    2,
+  "niedrig":                             1,
+  "unterdurchschnittlich":               1,
+  "hoch":                                4,
 };
 
 const WUNSCH_MAP = {
@@ -62,11 +68,13 @@ const WUNSCH_MAP = {
 };
 
 function salaryScore(gehalt, wunsch) {
+  if (gehalt.includes("insolvenz")) return 0;
+
   const niveau = Object.entries(NIVEAU_MAP).find(([k]) => gehalt.includes(k))?.[1] ?? 2;
   const ziel = WUNSCH_MAP[wunsch] ?? 2;
-  if (niveau >= ziel) return 20;
-  if (niveau === ziel - 1) return 10;
-  return 0;
+  const diff = niveau - ziel;
+  if (diff >= 0) return 20;
+  return Math.max(-10, 20 + diff * 10);
 }
 
 function cultureScore(c, grund) {
@@ -253,8 +261,7 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
   const geoUnbestaetigt = geo.punkte === 0;
   steps.push({ label: `Geo-Matching: ${geo.grund}`, punkte: geo.punkte });
 
-  const besonderheiten = (c["Besonderheiten"] || "").toLowerCase();
-  if (besonderheiten.includes("insolvenz")) { score -= 25; steps.push({ label: "Insolvenz-Warnung", punkte: -25 }); }
+  // Insolvenz-Hinweis: bewusst nicht im Score, nur informativ.
 
   const kununu = resolveKununuScore(c);
   if (kununu != null) {
@@ -371,7 +378,7 @@ for (const [i, r] of top10.entries()) {
 }
 
 // Gezielte Einzel-Aufschlüsselung für einen bestimmten Träger (unabhängig vom Rang)
-const GEZIELTER_TRAEGER = "AWO Bezirksverband Westliches Westfalen e.V.";
+const GEZIELTER_TRAEGER = "Argentum Pflege Holding GmbH";
 const gezielt = results.find((r) => r.carrier["Traeger"] === GEZIELTER_TRAEGER);
 console.log(`=== Einzel-Aufschlüsselung: "${GEZIELTER_TRAEGER}" ===\n`);
 if (!gezielt) {
