@@ -483,7 +483,7 @@ function ResultsScreen({ results, contact }) {
                 </div>
                 <div className="text-right">
                   <div className="text-2xl font-bold text-brand-500">
-                    {t.matchScore}%
+                    {Math.round(t.matchScore)}%
                   </div>
                   <div className="text-xs text-gray-400">{t.matchLabel}</div>
                 </div>
