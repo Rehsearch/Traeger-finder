@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { matchCarriers, findEinrichtungenImRadius, parseRadiusKm, formatKununuScore } from "@/lib/matching";
 import { trackLead } from "@/lib/metaPixel";
+import { trackLinkedInConversion } from "@/lib/linkedinInsight";
 
 const STEPS = [
   {
@@ -154,6 +155,7 @@ export default function MatchingTool() {
       });
 
       trackLead();
+      trackLinkedInConversion();
       setSubmitted(true);
       setStep(totalSteps + 2);
     } catch {

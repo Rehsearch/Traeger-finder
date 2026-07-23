@@ -1,6 +1,7 @@
 import "./globals.css";
 import CookieConsent from "@/components/CookieConsent";
 import MetaPixel from "@/components/MetaPixel";
+import LinkedInInsight from "@/components/LinkedInInsight";
 
 export const metadata = {
   title: "Träger-Finder | Rehsearch",
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
         </footer>
         <CookieConsent />
         <MetaPixel />
+        <LinkedInInsight />
       </body>
     </html>
   );
