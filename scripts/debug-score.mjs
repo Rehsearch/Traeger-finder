@@ -202,10 +202,13 @@ function explainGeo(traegerName, einrichtungen, lat, lng, radiusKm) {
   }
   const distanzen = mitKoord.map((e) => haversineKm(lat, lng, parseFloat(e.Latitude), parseFloat(e.Longitude)));
   const minDistanz = Math.min(...distanzen);
-  if (minDistanz <= radiusKm) {
-    return { punkte: 20, grund: `Nächste Einrichtung ${minDistanz.toFixed(1)} km entfernt, innerhalb Radius ${radiusKm} km` };
+  const distanzVerhaeltnis = minDistanz / radiusKm;
+  if (distanzVerhaeltnis <= 1) {
+    const punkte = 20 - distanzVerhaeltnis * 15;
+    return { punkte, grund: `Nächste Einrichtung ${minDistanz.toFixed(1)} km entfernt, innerhalb Radius ${radiusKm} km (${(distanzVerhaeltnis * 100).toFixed(0)}% des Radius)` };
   }
-  return { punkte: -30, grund: `Nächste Einrichtung ${minDistanz.toFixed(1)} km entfernt, AUSSERHALB Radius ${radiusKm} km` };
+  const punkte = -5 - Math.min(1, distanzVerhaeltnis - 1) * 25;
+  return { punkte, grund: `Nächste Einrichtung ${minDistanz.toFixed(1)} km entfernt, AUSSERHALB Radius ${radiusKm} km (${(distanzVerhaeltnis * 100).toFixed(0)}% des Radius)` };
 }
 
 // Repliziert scoreCarrier() Schritt für Schritt mit Punkte-Label pro Faktor.
