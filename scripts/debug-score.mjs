@@ -287,17 +287,38 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
 
   const obergrenze = geoUnbestaetigt ? 65 : 95;
   if (geoUnbestaetigt) steps.push({ label: `Obergrenze gedeckelt auf ${obergrenze}% (kein bestätigter Geo-Bezug)`, punkte: 0 });
-  const clamped = Math.max(0, obergrenze === 65
-    ? linearerDeckel(Math.max(0, score), 65, 20, 140)
-    : weicherDeckel(Math.max(0, score), 95, 80));
-  return { total: clamped, rawTotal: score, obergrenze, steps, hardFiltered: false };
+  const [minErwartet, maxErwartet] = gesamtGrenzen(geoUnbestaetigt);
+  const clamped = linearerDeckel(Math.max(0, score), obergrenze, minErwartet, maxErwartet);
+  return { total: clamped, rawTotal: score, obergrenze, geoUnbestaetigt, steps, hardFiltered: false };
 }
 
-function weicherDeckel(score, hardMax, softStart) {
-  if (score <= softStart) return score;
-  const spielraum = hardMax - softStart;
-  const ueberschuss = score - softStart;
-  return softStart + spielraum * (1 - 1 / (1 + ueberschuss / spielraum));
+// Repliziert FAKTOR_GRENZEN / gesamtGrenzen() / linearerDeckel() aus
+// lib/matching.js (Stand nach Commit "mathematisch hergeleitete Wertebereiche").
+const FAKTOR_GRENZEN = {
+  basis:              [50, 50],
+  versorgungsform:    [-20, 0],
+  dienstwagen:        [0, 10],
+  gehalt:             [-10, 20],
+  region:             [0, 15],
+  kultur:             [0, 10],
+  geoBestaetigt:      [-30, 20],
+  geoUnbestaetigt:     [0, 0],
+  kununu:             [-30, 30],
+  interneBewertung:   [-15, 15],
+  tarifvertrag:       [-5, 10],
+};
+
+function gesamtGrenzen(geoUnbestaetigt) {
+  const relevant = [
+    FAKTOR_GRENZEN.basis, FAKTOR_GRENZEN.versorgungsform, FAKTOR_GRENZEN.dienstwagen,
+    FAKTOR_GRENZEN.gehalt, FAKTOR_GRENZEN.region, FAKTOR_GRENZEN.kultur,
+    geoUnbestaetigt ? FAKTOR_GRENZEN.geoUnbestaetigt : FAKTOR_GRENZEN.geoBestaetigt,
+    FAKTOR_GRENZEN.kununu, FAKTOR_GRENZEN.interneBewertung, FAKTOR_GRENZEN.tarifvertrag,
+  ];
+  return [
+    relevant.reduce((sum, [min]) => sum + min, 0),
+    relevant.reduce((sum, [, max]) => sum + max, 0),
+  ];
 }
 
 function linearerDeckel(score, hardMax, minErwartet, maxErwartet) {
