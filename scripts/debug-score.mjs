@@ -286,17 +286,29 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
   }
 
   const obergrenze = geoUnbestaetigt ? 65 : 95;
-  if (geoUnbestaetigt) steps.push({ label: `Obergrenze gedeckelt auf ${obergrenze}% (kein bestätigter Geo-Bezug)`, punkte: 0 });
-  const weicherStart = geoUnbestaetigt ? 50 : 80;
-  const clamped = Math.max(0, weicherDeckel(Math.max(0, score), obergrenze, weicherStart));
-  return { total: clamped, rawTotal: score, steps, hardFiltered: false };
+  if (geoUnbestaetigt) steps.push({ label: `Anzeige-Obergrenze ${obergrenze}% (kein bestätigter Geo-Bezug)`, punkte: 0 });
+  const rohScore = Math.max(0, score);
+  return { total: rohScore, obergrenze, steps, hardFiltered: false };
 }
 
-function weicherDeckel(score, hardMax, softStart) {
-  if (score <= softStart) return score;
-  const spielraum = hardMax - softStart;
-  const ueberschuss = score - softStart;
-  return softStart + spielraum * (1 - 1 / (1 + ueberschuss / spielraum));
+// Repliziert relativeAnzeigeScores() aus lib/matching.js (Stand 2026-07-24).
+function relativeAnzeigeScores(entries) {
+  const MIN_GAP = 4;
+  const MAX_GAP = 15;
+  const PUNKTE_PRO_ROHPUNKT = 0.3;
+
+  const anzeigen = [];
+  for (let i = 0; i < entries.length; i++) {
+    const { score, obergrenze } = entries[i];
+    if (i === 0) {
+      anzeigen.push(Math.max(0, Math.min(obergrenze, score)));
+      continue;
+    }
+    const rohAbstand = entries[i - 1].score - score;
+    const abstand = Math.min(MAX_GAP, Math.max(MIN_GAP, rohAbstand * PUNKTE_PRO_ROHPUNKT));
+    anzeigen.push(Math.max(0, Math.min(obergrenze, anzeigen[i - 1] - abstand)));
+  }
+  return anzeigen;
 }
 
 // ─── Ausführung ──────────────────────────────────────────────────────────────
@@ -342,19 +354,35 @@ const results = carriers.map((c) => {
   return { carrier: c, ...breakdown };
 });
 
-// Cross-Check gegen die echte matchCarriers()-Implementierung
-let mismatches = 0;
+// Cross-Check gegen die echte matchCarriers()-Implementierung. Der Anzeigewert
+// hängt jetzt (relative Platzierung) von den Mitbewerbern in den Top 3 ab,
+// daher muss hier — wie in der echten Nutzung — die komplette Trägerliste auf
+// einmal übergeben werden, nicht mehr Träger für Träger einzeln.
+const real = matchCarriers(carriers, answers, einrichtungen);
+
+const bestByName = new Map();
 for (const r of results) {
   if (r.hardFiltered) continue;
-  const real = matchCarriers([r.carrier], answers, einrichtungen);
-  const realScore = real.length > 0 ? real[0].matchScore : 0;
-  if (realScore !== r.total) {
+  const name = (r.carrier["Traeger"] || r.carrier.id || "").toLowerCase().trim();
+  if (!bestByName.has(name) || r.total > bestByName.get(name).total) {
+    bestByName.set(name, r);
+  }
+}
+const lokalTop3 = [...bestByName.values()].sort((a, b) => b.total - a.total).slice(0, 3);
+const lokalAnzeige = relativeAnzeigeScores(lokalTop3.map((r) => ({ score: r.total, obergrenze: r.obergrenze })));
+
+let mismatches = 0;
+for (let i = 0; i < real.length; i++) {
+  const erwartet = Math.round(lokalAnzeige[i] * 10) / 10;
+  const nameEcht = real[i]["Traeger"];
+  const nameLokal = lokalTop3[i]?.carrier["Traeger"];
+  if (real[i].matchScore !== erwartet || nameEcht !== nameLokal) {
     mismatches++;
-    console.log(`⚠️  ABWEICHUNG bei "${r.carrier["Traeger"]}": Replik=${r.total}, echte matchCarriers()=${realScore}`);
+    console.log(`⚠️  ABWEICHUNG Platz ${i + 1}: echte matchCarriers()="${nameEcht}" (${real[i].matchScore}%), Replik="${nameLokal}" (${erwartet}%)`);
   }
 }
 console.log(mismatches === 0
-  ? "✓ Cross-Check OK: Replik-Score stimmt bei allen Trägern mit der echten matchCarriers()-Implementierung überein.\n"
+  ? "✓ Cross-Check OK: Replik (Top 3 + relative Anzeige) stimmt mit der echten matchCarriers()-Implementierung überein.\n"
   : `⚠️  ${mismatches} Abweichung(en) zwischen Replik und echter Implementierung gefunden (siehe oben) -- Replik-Logik in diesem Skript ist vermutlich veraltet.\n`);
 
 // Geo-Statistik
@@ -375,9 +403,11 @@ const top10 = [...results]
   .sort((a, b) => b.total - a.total)
   .slice(0, 10);
 
-console.log("=== Top 10 Träger nach Score ===\n");
+console.log("=== Top 10 Träger nach Rohscore (Anzeige-% nur für Platz 1-3 relevant) ===\n");
 for (const [i, r] of top10.entries()) {
-  console.log(`#${i + 1} ${r.carrier["Traeger"]} — Score: ${r.total}${r.rawTotal !== r.total ? ` (roh: ${r.rawTotal}, gekappt auf 0-95)` : ""}`);
+  const rangInTop3 = lokalTop3.findIndex((t) => t.carrier === r.carrier);
+  const anzeigeHinweis = rangInTop3 !== -1 ? ` — Anzeige: ${(Math.round(lokalAnzeige[rangInTop3] * 10) / 10)}%` : "";
+  console.log(`#${i + 1} ${r.carrier["Traeger"]} — Rohscore: ${r.total.toFixed(1)} (Obergrenze ${r.obergrenze}%)${anzeigeHinweis}`);
   for (const s of r.steps) {
     const sign = s.punkte > 0 ? "+" : "";
     console.log(`    ${sign}${s.punkte}  ${s.label}`);
@@ -394,7 +424,7 @@ if (!gezielt) {
 } else if (gezielt.hardFiltered) {
   console.log("Träger wurde durch einen Hard-Filter aussortiert (Score 0):", gezielt.steps[0].label);
 } else {
-  console.log(`Score: ${gezielt.total}${gezielt.rawTotal !== gezielt.total ? ` (roh: ${gezielt.rawTotal}, gekappt auf 0-95)` : ""}`);
+  console.log(`Rohscore: ${gezielt.total.toFixed(1)} (Anzeige-Obergrenze ${gezielt.obergrenze}% — tatsächliche Anzeige hängt zusätzlich von den Mitbewerbern in den Top 3 ab)`);
   for (const s of gezielt.steps) {
     const sign = s.punkte > 0 ? "+" : "";
     console.log(`    ${sign}${s.punkte}  ${s.label}`);
