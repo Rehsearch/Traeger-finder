@@ -287,8 +287,9 @@ function scoreCarrierBreakdown(c, a, einrichtungen, radiusKm) {
 
   const obergrenze = geoUnbestaetigt ? 65 : 95;
   if (geoUnbestaetigt) steps.push({ label: `Obergrenze gedeckelt auf ${obergrenze}% (kein bestätigter Geo-Bezug)`, punkte: 0 });
-  const weicherStart = geoUnbestaetigt ? 40 : 80;
-  const clamped = Math.max(0, weicherDeckel(Math.max(0, score), obergrenze, weicherStart));
+  const clamped = Math.max(0, obergrenze === 65
+    ? linearerDeckel(Math.max(0, score), 65, 20, 140)
+    : weicherDeckel(Math.max(0, score), 95, 80));
   return { total: clamped, rawTotal: score, obergrenze, steps, hardFiltered: false };
 }
 
@@ -297,6 +298,11 @@ function weicherDeckel(score, hardMax, softStart) {
   const spielraum = hardMax - softStart;
   const ueberschuss = score - softStart;
   return softStart + spielraum * (1 - 1 / (1 + ueberschuss / spielraum));
+}
+
+function linearerDeckel(score, hardMax, minErwartet, maxErwartet) {
+  const geklemmt = Math.max(minErwartet, Math.min(maxErwartet, score));
+  return ((geklemmt - minErwartet) / (maxErwartet - minErwartet)) * hardMax;
 }
 
 // ─── Ausführung ──────────────────────────────────────────────────────────────
